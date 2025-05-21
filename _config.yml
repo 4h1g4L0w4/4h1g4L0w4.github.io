@@ -13,8 +13,6 @@ timezone: America/Argentina/Buenos_Aires
 
 # jekyll-seo-tag settings › https://github.com/jekyll/jekyll-seo-tag/blob/master/docs/usage.md
 # ↓ --------------------------
-favicon:
-  path: /assets/img/favicon.ico
 
 title: Augusto Merlo # the main title
 
