@@ -2,7 +2,6 @@
 title: GEOLOCALIZANDO PERSONAS A TRAVÉS-DE LLAMADAS DE VOZ
 date: 2025-05-21
 categories: [Hacking]
-tags: [hacking]     # TAG names should always be lowercase
 ---
 📌 Introducción​
 
