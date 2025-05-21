@@ -1,5 +1,5 @@
 ---
-title: "Exposición de ubicación y datos sensibles en llamadas VoLTE (O2 UK)"
+title: "Geolocalizacion a Traves de Llamadas de Voz"
 author: "Augusto Merlo"
 date: 2025-05-21
 tags: [seguridad, privacidad, telecomunicaciones]
