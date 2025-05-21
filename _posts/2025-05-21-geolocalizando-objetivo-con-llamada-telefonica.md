@@ -2,8 +2,8 @@
 title: "Exposición de ubicación y datos sensibles en llamadas VoLTE (O2 UK)"
 author: "Augusto Merlo"
 date: 2025-05-21
-tags: [VoLTE, IMS, seguridad, privacidad, telecomunicaciones, Cellmapper]
-categories: [Seguridad Móvil, Análisis Técnico]
+tags: [seguridad, privacidad, telecomunicaciones]
+categories: [Seguridad, Privacidad]
 description: "Cómo la implementación de VoLTE en O2 UK filtra información sensible como ubicación, IMSI e IMEI durante las llamadas 4G a través del protocolo IMS."
 ---
 
