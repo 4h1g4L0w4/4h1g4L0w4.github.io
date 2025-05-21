@@ -1,6 +1,6 @@
 ---
 title: "Geolocalizacion a Traves de Llamadas de Voz"
-author: "Augusto Merlo"
+author: augusto
 date: 2025-05-21
 tags: [seguridad, privacidad, telecomunicaciones]
 categories: [Seguridad, Privacidad]
