@@ -56,9 +56,8 @@ Con un Cell ID obtenido durante una llamada, se puede:
 - Estimar la posición física del receptor con alta precisión.
 
 > Incluso si el receptor se encuentra en **roaming**, es posible determinar su ubicación exacta a partir del Cell ID presente en los encabezados SIP.
-![img](/assets/img/cell-id-calculator.avif)
 
-_👉 Aquí puedes insertar una imagen de Cellmapper mostrando la celda identificada._
+![img](/assets/img/cell-id-calculator.avif)
 
 ## ¿Por qué representa un problema grave?
 
