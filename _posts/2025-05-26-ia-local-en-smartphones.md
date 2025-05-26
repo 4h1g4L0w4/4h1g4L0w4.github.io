@@ -2,10 +2,10 @@
 title: "Como correr IA de manera local en smartphones"
 author: augusto
 date: 2025-05-26
-categories: [IA, Privacidad, Open Source]
 tags: [ia, privacidad, open source]
+categories: [IA, Privacidad, Open Source]
 description: "PocketPal AI, una aplicación que lleva modelos de lenguaje directamente a tu teléfono, funcionando completamente offline y protegiendo tu privacidad."
---------------------------------------
+---
 
 ## ¿Qué es PocketPal AI?
 
