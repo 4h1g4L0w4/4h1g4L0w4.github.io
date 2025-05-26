@@ -1,7 +1,7 @@
 ---
 title: "Proyecto Cluster PostgreSQL, PatronI, Etcd y Haproxy"
 author: augusto
-date: 2025-05-26
+date: 2025-05-27
 tags: [proyectos, trabajo]
 categories: [Proyectos, Trabajo]
 description: "Proyecto e implementacion de un cluster de PostgreSQL con PatronI, Etcd y Haproxy"
