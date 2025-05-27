@@ -5,6 +5,7 @@ date: 2025-05-27
 tags: [proyectos, trabajo]
 categories: [Proyectos, Trabajo]
 description: "Proyecto e implementacion de un cluster de PostgreSQL con PatronI, Etcd y Haproxy"
+mermaid: true
 ---
 
 # Cluster de Base de Datos Postgres con Patroni
@@ -165,7 +166,7 @@ postgresql:
 
 ### Levantar el cluster con docker compose
 
-```YAML
+```yaml
 networks:
   postgres-cluster:
 
@@ -372,4 +373,5 @@ haproxy3 --> patroni-master
 Para implementar este modelo de base de datos se tuvieron que realizar diversos ajustes para proporcionar redundancia y alta disponibilidad:
 ### Implementaciones
 **X3 Haproxy:** Adicion dos servicios de Haproxy mas, conectados al ddns para poder garantizar el acceso cluster con hasta dos servicios en falla. Ademas el Ddns balancea la carga entre los tres utilizando Round Robin. (Los servicios de Haproxy son individuales, no hay cluster)
+
 **Cluster Etcd:** Aplicación de un Cluster Etcd, para respaldar la integridad del cluster Postgres. Ya que una falla en el servicio del almacén ocasiona un desarme del cluster
