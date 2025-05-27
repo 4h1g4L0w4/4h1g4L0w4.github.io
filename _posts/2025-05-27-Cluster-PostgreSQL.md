@@ -258,20 +258,20 @@ volumes:
 ```
 
 ### Uso
-**conectate al nodo master
+**conectate al nodo master**
 
 ```bash
 docker exec -it patroni-master psql -U admin -d postgres
 ```
 
-**Crea una tabla e inserta datos
+**Crea una tabla e inserta datos**
 
 ```sql
 CREATE TABLE test_table (id SERIAL PRIMARY KEY, name TEXT);
 INSERT INTO test_table (name) VALUES ('Test 1'), ('Test 2');
 ```
 
-**Verifica en las réplicas
+**Verifica en las réplicas**
 
 ```sql
 docker exec -it patroni-replica-1 psql -U admin -d postgres -c "SELECT * FROM test_table;"
@@ -375,3 +375,5 @@ Para implementar este modelo de base de datos se tuvieron que realizar diversos 
 **X3 Haproxy:** Adicion dos servicios de Haproxy mas, conectados al ddns para poder garantizar el acceso cluster con hasta dos servicios en falla. Ademas el Ddns balancea la carga entre los tres utilizando Round Robin. (Los servicios de Haproxy son individuales, no hay cluster)
 
 **Cluster Etcd:** Aplicación de un Cluster Etcd, para respaldar la integridad del cluster Postgres. Ya que una falla en el servicio del almacén ocasiona un desarme del cluster
+
+**Instalacion on premise:** Los servicios fueron instalados en servidores distribuidos de distintos proveedores
