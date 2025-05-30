@@ -1,7 +1,7 @@
 ---
 title: "Deshabilitar Backdoor Intel"
 author: augusto
-date: 2025-05-21
+date: 2025-05-30
 tags: [seguridad, privacidad]
 categories: [Seguridad, Privacidad]
 description: "Que es y como es posible deshabilitar el Intel Managment Engine a traves de Coreboot"
