@@ -23,7 +23,7 @@ Como N8N (a dia de hoy) no esta pensado para utilizarse con Replicas en K8S. Se 
 **N8N Trigger:** Backend donde llegan los mensajes y sirve como trigger para ejecutar los flujos de Chat de N8N
 
 ## Diagrama
-img src="/assets/img/n8nha.png" alt="Diagrama de la infraestructura" width="600" />
+<img src="/assets/img/n8nha.png" alt="Diagrama de la infraestructura" width="600" />
 
 ---
 
