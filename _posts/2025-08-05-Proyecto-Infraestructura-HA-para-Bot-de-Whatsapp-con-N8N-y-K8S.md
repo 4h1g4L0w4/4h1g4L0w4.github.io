@@ -16,10 +16,15 @@ Como N8N (a dia de hoy) no esta pensado para utilizarse con Replicas en K8S. Se 
 
 ## Tecnologias utilizadas
 **Docker:** Plataforma para ejecutar aplicaciones en contenedores ligeros y portables.
+
 **K8S:** Sistema que gestiona y escala contenedores automáticamente en clústeres.
+
 **N8N:** Herramienta visual de automatización para conectar apps y servicios sin código.
+
 **HaProxy:** es un software de balanceo de carga y proxy inverso de alto rendimiento. 
-**Custom Service:** Servicio utilizado para monitorear el HPA de K8S y ejecutar los Deployments de Kubernetes para poder escalar/reducir el las instancias
+
+**Custom Service:** Servicio utilizado para monitorear el HPA de K8S y ejecutar los Deployments de Kubernetes para poder escalar/reducir el las instancias.
+
 **N8N Trigger:** Backend donde llegan los mensajes y sirve como trigger para ejecutar los flujos de Chat de N8N
 
 ## Diagrama
