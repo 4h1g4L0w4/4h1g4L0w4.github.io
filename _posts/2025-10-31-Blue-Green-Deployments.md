@@ -8,12 +8,6 @@ description: "Documentación completa sobre cómo implementar deployments sin do
 mermaid: true
 ---
 
-# 🎯 Blue/Green Deployments para Kubernetes
-
-Bienvenido a la documentación completa sobre cómo implementar deployments sin downtime utilizando la estrategia Blue/Green en Kubernetes.
-
----
-
 ## 📚 ¿Qué es Blue/Green Deployment?
 
 Blue/Green es una estrategia de deployment que mantiene dos entornos idénticos en producción:
@@ -30,6 +24,7 @@ Al hacer un nuevo deployment:
 ## ✨ Ventajas Clave
 
 ```mermaid
+%%{init: {"themeVariables": { "textColor": "#ff0000"}}}%%
 graph LR
     A[Blue/Green] --> B[Zero Downtime]
     A --> C[Rollback Rápido]
@@ -117,7 +112,7 @@ myapp-svc                   ClusterIP 5m
 Versión activa: blue
 ```
 
-### Paso 5: Hacer un Deployment
+### Paso 4: Hacer un Deployment
 
 #### Deployment Automático (GitHub Actions)
 
@@ -162,6 +157,7 @@ kubectl scale deployment/myapp-$CURRENT --replicas=0
 ### Vista General
 
 ```mermaid
+%%{init: {"themeVariables": { "textColor": "#ff0000"}}}%%
 graph TB
     subgraph "Development"
         A[Developer]
@@ -214,6 +210,7 @@ graph TB
 #### 1. GitHub Actions Workflow
 
 ```mermaid
+%%{init: {"themeVariables": { "textColor": "#ff0000"}}}%%
 graph LR
     A[Checkout] --> B[Build]
     B --> C[Push]
@@ -232,6 +229,7 @@ graph LR
 #### 2. Kubernetes Resources
 
 ```mermaid
+%%{init: {"themeVariables": { "textColor": "#ff0000"}}}%%
 graph TB
     subgraph "Blue Deployment"
         A[name: myapp-blue<br/>label: version=blue]
@@ -254,6 +252,7 @@ graph TB
 ### Flujo de Datos
 
 ```mermaid
+%%{init: {"themeVariables": { "textColor": "#ff0000"}}}%%
 sequenceDiagram
     autonumber
     participant Dev as Developer
@@ -299,6 +298,7 @@ sequenceDiagram
 ### Ciclo de Deployment
 
 ```mermaid
+%%{init: {"themeVariables": { "textColor": "#ff0000"}}}%%
 stateDiagram-v2
     [*] --> BlueActive: Initial
     
@@ -341,6 +341,7 @@ stateDiagram-v2
 ### Timeline del Deployment
 
 ```mermaid
+%%{init: {"themeVariables": { "textColor": "#ff0000"}}}%%
 graph TB
     Start([git push origin main]) --> Build[Build Docker Image]
     Build --> Push[Push to GHCR]
@@ -373,6 +374,7 @@ graph TB
 ### Pipeline Completo
 
 ```mermaid
+%%{init: {"themeVariables": { "textColor": "#ff0000"}}}%%
 graph TD
     Start([Push a main / Manual Trigger]) --> Checkout[Checkout Code]
     Checkout --> ShowContext[Show Context]
@@ -467,6 +469,7 @@ gantt
 ### 1. Aislamiento Total
 
 ```mermaid
+%%{init: {"themeVariables": { "textColor": "#ff0000"}}}%%
 graph TB
     subgraph "Blue Environment"
         A[Blue Pod 1]
@@ -496,6 +499,7 @@ graph TB
 ### 2. Tráfico Direccionado
 
 ```mermaid
+%%{init: {"themeVariables": { "textColor": "#ff0000"}}}%%
 graph LR
     subgraph "Traffic Flow"
         A[Clients] --> B[Service]
@@ -518,6 +522,7 @@ graph LR
 ### 3. Gestión de Recursos
 
 ```mermaid
+%%{init: {"themeVariables": { "textColor": "#ff0000"}}}%%
 graph LR
     A[Active Deployment] -->|1 replica| B[Consuming Resources]
     C[Standby Deployment] -->|0 replicas| D[No Resources]
@@ -538,6 +543,7 @@ graph LR
 ## 🔐 Seguridad
 
 ```mermaid
+%%{init: {"themeVariables": { "textColor": "#ff0000"}}}%%
 graph TB
     subgraph "GitHub Secrets"
         A[PAT Token]
@@ -604,6 +610,7 @@ echo "✅ Rollback completado a versión: $PREV"
 ## 🚨 Puntos de Falla y Mitigación
 
 ```mermaid
+%%{init: {"themeVariables": { "textColor": "#ff0000"}}}%%
 graph TB
     subgraph "Failure Points"
         A[Build Failure]
@@ -676,6 +683,7 @@ kubectl describe pod -l app=myapp,version=blue
 ### Horizontal Scaling
 
 ```mermaid
+%%{init: {"themeVariables": { "textColor": "#ff0000"}}}%%
 graph TB
     subgraph "Single Replica"
         A[1 Pod] --> B[Limited Capacity]
@@ -702,6 +710,7 @@ spec:
 ### Load Balancing
 
 ```mermaid
+%%{init: {"themeVariables": { "textColor": "#ff0000"}}}%%
 graph LR
     A[Client 1] --> D[Service]
     B[Client 2] --> D
