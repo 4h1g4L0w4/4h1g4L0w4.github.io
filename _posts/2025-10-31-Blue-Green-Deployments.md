@@ -464,6 +464,285 @@ gantt
 
 ---
 
+## 🔧 Workflow de GitHub Actions
+
+### Estructura Completa
+
+El workflow completo está integrado en el archivo `.github/workflows/Docker-build-and-push.yaml`:
+
+```yaml
+name: Docker build and push
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+      actions: write
+
+    steps:
+      # 1. Preparación
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - name: Login to GHCR
+        run: echo "${{ secrets.PAT }}" | docker login ghcr.io -u "${{ secrets.USERNAME }}" --password-stdin
+
+      # 2. Build y Push
+      - name: Build Docker image
+        run: |
+          docker buildx build \
+            -t ghcr.io/YOUR_ORG/YOUR_APP:${{ github.sha }} \
+            -t ghcr.io/YOUR_ORG/YOUR_APP:latest \
+            $GITHUB_WORKSPACE
+
+      - name: Push image to GHCR
+        run: |
+          docker push ghcr.io/YOUR_ORG/YOUR_APP:${{ github.sha }}
+          docker push ghcr.io/YOUR_ORG/YOUR_APP:latest
+
+      # 3. Kubernetes Setup
+      - name: Set up Kubeconfig
+        run: |
+          echo "${{ secrets.KUBECONFIG_CONTENT }}" > $GITHUB_WORKSPACE/kubeconfig
+
+      # 4. Blue/Green Deployment
+      - name: Detect Current Version
+        id: detect-version
+        run: |
+          CURRENT=$(kubectl get service myapp-svc -o jsonpath='{.spec.selector.version}')
+          if [ "$CURRENT" = "blue" ]; then
+            NEXT="green"
+          else
+            NEXT="blue"
+          fi
+          echo "current=$CURRENT" >> $GITHUB_OUTPUT
+          echo "next=$NEXT" >> $GITHUB_OUTPUT
+
+      - name: Scale Next Version to 1 Replica
+        run: |
+          REPLICAS=$(kubectl get deployment myapp-${{ steps.detect-version.outputs.next }} -o jsonpath='{.spec.replicas}' 2>/dev/null || echo "0")
+          if [ "$REPLICAS" = "0" ]; then
+            kubectl scale deployment/myapp-${{ steps.detect-version.outputs.next }} --replicas=1
+          fi
+
+      - name: Update Image to Next Version
+        run: |
+          kubectl set image deployment/myapp-${{ steps.detect-version.outputs.next }} \
+            myapp=ghcr.io/YOUR_ORG/YOUR_APP:${{ github.sha }}
+
+      - name: Wait for Rollout to Complete
+        run: |
+          kubectl rollout status deployment/myapp-${{ steps.detect-version.outputs.next }} --timeout=5m
+
+      - name: Switch Traffic to Next Version
+        run: |
+          kubectl patch service myapp-svc \
+            -p "{\"spec\":{\"selector\":{\"app\":\"myapp\",\"version\":\"${{ steps.detect-version.outputs.next }}\"}}}"
+
+      - name: Scale Previous Version to 0
+        run: |
+          kubectl scale deployment/myapp-${{ steps.detect-version.outputs.current }} --replicas=0
+
+      - name: Generate deployment summary
+        run: |
+          echo "## Deployment Summary (Blue/Green)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Image:** \`ghcr.io/YOUR_ORG/YOUR_APP:${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Versión Anterior:** \`${{ steps.detect-version.outputs.current }}\` → **Nueva:** \`${{ steps.detect-version.outputs.next }}\`" >> $GITHUB_STEP_SUMMARY
+```
+
+### Pasos del Workflow
+
+```mermaid
+%%{init: {"themeVariables": { "textColor": "#ff0000"}}}%%
+graph TD
+    subgraph "Fase 1: Preparación"
+        A1[Checkout Code]
+        A2[Login GHCR]
+    end
+    
+    subgraph "Fase 2: Build"
+        B1[Build Image]
+        B2[Push Images]
+    end
+    
+    subgraph "Fase 3: Deploy"
+        C1[Setup Kubeconfig]
+        C2[Detect Version]
+        C3[Scale Next]
+        C4[Update Image]
+        C5[Wait Rollout]
+        C6[Switch Traffic]
+        C7[Scale Previous]
+        C8[Generate Summary]
+    end
+    
+    A1 --> A2
+    A2 --> B1
+    B1 --> B2
+    B2 --> C1
+    C1 --> C2
+    C2 --> C3
+    C3 --> C4
+    C4 --> C5
+    C5 --> C6
+    C6 --> C7
+    C7 --> C8
+    
+    style A1 fill:#e1f5ff
+    style B1 fill:#fff3cd
+    style C6 fill:#cce5ff
+    style C8 fill:#d4edda
+```
+
+### Detalles de Cada Fase
+
+#### Fase 1: Preparación (30-60 segundos)
+
+```yaml
+- Checkout code: Descarga el código del repositorio
+- Login GHCR: Autenticación con GitHub Container Registry
+```
+
+#### Fase 2: Build (60-120 segundos)
+
+```yaml
+- Build Image: Construye imagen con dos tags
+  - $SHA: Identificador único del commit
+  - latest: Tag para facilitar referencias
+  
+- Push Images: Sube ambas imágenes al registry
+```
+
+#### Fase 3: Deploy (120-180 segundos)
+
+**3.1 Setup Kubernetes**
+```yaml
+- Set up Kubeconfig: Configura acceso al cluster
+```
+
+**3.2 Detección Inteligente**
+```yaml
+- Detect Current Version: Lee el selector del servicio
+  Output: current=blue, next=green (o viceversa)
+```
+
+**3.3 Preparación del Deploy**
+```yaml
+- Scale Next: Escala el deployment inactivo a 1 si está en 0
+- Update Image: Actualiza la imagen al SHA del commit
+- Wait Rollout: Espera confirmación de que está listo
+```
+
+**3.4 Switch de Tráfico**
+```yaml
+- Switch Traffic: Cambia el selector del servicio (instantáneo)
+- Scale Previous: Escala versión anterior a 0
+```
+
+**3.5 Finalización**
+```yaml
+- Generate Summary: Crea resumen en GitHub Actions UI
+```
+
+### Variables del Workflow
+
+#### Outputs del Step "detect-version"
+
+Estos outputs se usan en los siguientes steps:
+
+```yaml
+steps.detect-version.outputs.current  # "blue" o "green"
+steps.detect-version.outputs.next     # "green" o "blue"
+```
+
+#### GitHub Context Variables
+
+```yaml
+github.sha         # SHA del commit actual
+github.ref_name    # Nombre de la rama (main)
+```
+
+#### Secrets Requeridos
+
+```yaml
+secrets.PAT              # Personal Access Token
+secrets.USERNAME         # Usuario de GitHub
+secrets.KUBECONFIG_CONTENT  # Config del cluster
+```
+
+### Ejemplo de Ejecución
+
+```yaml
+Trigger: git push origin main
+         ↓
+Checkout: Código descargado
+         ↓
+Login: Autenticado en GHCR
+         ↓
+Build: Image ghcr.io/org/app:abc123def built
+       Image ghcr.io/org/app:latest built
+         ↓
+Push: Ambas imágenes subidas
+         ↓
+Detect: current=blue, next=green
+         ↓
+Scale: Green → 1 replica
+         ↓
+Update: Image actualizada a abc123def
+         ↓
+Wait: Green deployment ready ✅
+         ↓
+Switch: Service selector → version=green ⚡
+         ↓
+Scale: Blue → 0 replicas
+         ↓
+Summary: Deployment completed
+```
+
+### Manejo de Errores
+
+```mermaid
+%%{init: {"themeVariables": { "textColor": "#ff0000"}}}%%
+flowchart TD
+    Start[Workflow Start] --> Build{Build Success?}
+    
+    Build -->|❌ No| Fail1[❌ Workflow Fails<br/>No deployment]
+    Build -->|✅ Yes| Push{Push Success?}
+    
+    Push -->|❌ No| Fail2[❌ Workflow Fails<br/>Image not pushed]
+    Push -->|✅ Yes| Rollout{Rollout Success?}
+    
+    Rollout -->|❌ No| Clean[Scale deployment to 0<br/>Keep current active]
+    Rollout -->|✅ Yes| Switch[Switch Traffic]
+    
+    Clean --> Success[✅ Workflow completes<br/>No downtime]
+    Switch --> Success2[✅ Workflow completes<br/>New version active]
+    
+    style Fail1 fill:#f8d7da
+    style Fail2 fill:#f8d7da
+    style Clean fill:#fff3cd
+    style Success fill:#d4edda
+    style Success2 fill:#d4edda
+```
+
+### Ventajas de esta Implementación
+
+✅ **Todo en un workflow**: Build, test, deploy en un solo pipeline  
+✅ **Automatización completa**: Sin intervención manual  
+✅ **Rollback automático**: Si falla, se detiene antes del switch  
+✅ **Visibilidad total**: Cada paso es visible en GitHub Actions  
+✅ **Outputs reutilizables**: Variables pasan entre steps  
+✅ **Verificación en cada paso**: Errores detectados tempranamente  
+
+---
+
 ## 🎯 Puntos Clave de Diseño
 
 ### 1. Aislamiento Total
@@ -784,33 +1063,33 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: crm-bot-api-green
+  name: myapp-green
   labels:
-    app: crm-bot-api
+    app: myapp
     version: green
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: crm-bot-api
+      app: myapp
       version: green
   template:
     metadata:
       labels:
-        app: crm-bot-api
+        app: myapp
         version: green
     spec:
       containers:
-        - name: crm-bot-api
-          image: ghcr.io/org-sistemas-sn/crm-bot-api:latest
+        - name: myapp
+          image: ghcr.io/YOUR_ORG/YOUR_APP:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 3001
           envFrom:
             - secretRef:
-                name: crm-bot-api-secret
+                name: myapp-secret
       imagePullSecrets:
-        - name: ghcr-secret
+        - name: registry-secret
 ```
 
 ### Service
