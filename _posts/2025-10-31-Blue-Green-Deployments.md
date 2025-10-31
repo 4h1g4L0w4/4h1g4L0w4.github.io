@@ -905,6 +905,7 @@ spec:
 **Cómo funciona el enrutamiento:**
 
 ```mermaid
+%%{init: {"themeVariables": { "textColor": "#ff0000"}}}%%
 graph TB
     subgraph "Cluster"
         Service[Service<br/>selector: app=myapp<br/>version=blue]
@@ -931,6 +932,7 @@ graph TB
 **Estado inicial (Blue activo):**
 
 ```mermaid
+%%{init: {"themeVariables": { "textColor": "#ff0000"}}}%%
 graph LR
     Client[Clients] --> Svc[Service<br/>selector: version=blue]
     
@@ -945,6 +947,7 @@ graph LR
 **Después del switch (Green activo):**
 
 ```mermaid
+%%{init: {"themeVariables": { "textColor": "#ff0000"}}}%%
 graph LR
     Client[Clients] --> Svc[Service<br/>selector: version=green]
     
@@ -1027,6 +1030,7 @@ kubectl get endpoints myapp-svc
 #### Resumen
 
 ```mermaid
+%%{init: {"themeVariables": { "textColor": "#ff0000"}}}%%
 graph TB
     subgraph "1. Deployment Labels"
         A[Deployment: version=blue]
@@ -1081,6 +1085,7 @@ Después de tu primer deployment:
 ### 1. Canary Deployment (Potencial Evolución)
 
 ```mermaid
+%%{init: {"themeVariables": { "textColor": "#ff0000"}}}%%
 graph TB
     A[100% Blue] --> B[90% Blue 10% Green]
     B --> C[50% Blue 50% Green]
@@ -1096,6 +1101,7 @@ graph TB
 ### 2. Feature Flags (Extensión Futura)
 
 ```mermaid
+%%{init: {"themeVariables": { "textColor": "#ff0000"}}}%%
 graph TB
     A[Deployment] --> B{Feature Flag}
     B -->|Enabled| C[New Feature]
@@ -1109,6 +1115,7 @@ graph TB
 ### 3. Database Migration Strategies
 
 ```mermaid
+%%{init: {"themeVariables": { "textColor": "#ff0000"}}}%%
 graph TB
     A[Schema v1] --> B[Schema v2 Compatible]
     B --> C[Schema v2]
@@ -1125,6 +1132,7 @@ graph TB
 ## 🔄 Evolución del Sistema
 
 ```mermaid
+%%{init: {"themeVariables": { "textColor": "#ff0000"}}}%%
 graph LR
     A[v1.0: Basic BG] --> B[v2.0: GitHub Actions]
     B --> C[v3.0: Canary?]
