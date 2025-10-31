@@ -843,6 +843,7 @@ El Blue/Green deployment funciona gracias a **labels** (etiquetas) y **selectors
 Los labels son pares clave-valor que puedes adjuntar a cualquier objeto de Kubernetes. Son fundamentales para organizar y seleccionar recursos.
 
 ```mermaid
+%%{init: {"themeVariables": { "textColor": "#ff0000"}}}%%
 graph TB
     subgraph "Labels en el Deployment"
         A[Deployment Blue<br/>labels: app=myapp<br/>version=blue]
