@@ -1013,10 +1013,7 @@ blue-green-deployments/
 ├── deployment-blue.yaml      # Deployment para entorno Blue
 ├── deployment-green.yaml     # Deployment para entorno Green
 ├── service.yaml              # Service con selector dinámico
-├── Docker-build-and-push.yaml  # GitHub Actions workflow
-├── scripts/
-│   └── install-blue-green.sh   # Script de instalación inicial
-└── README.md                    # Documentación general
+└── Docker-build-and-push.yaml  # GitHub Actions workflow
 ```
 
 ### Deployments (ejemplo)
