@@ -485,74 +485,108 @@ jobs:
       actions: write
 
     steps:
-      # 1. Preparación
       - name: Checkout code
         uses: actions/checkout@v3
-        
+        with:
+          fetch-depth: 0  # asegúrate de tener todo el repo
+
+      - name: Show context
+        run: |
+          echo "📁 Build context:"
+          pwd
+          ls -la
+          du -sh .
+
       - name: Login to GHCR
         run: echo "${{ secrets.PAT }}" | docker login ghcr.io -u "${{ secrets.USERNAME }}" --password-stdin
 
-      # 2. Build y Push
       - name: Build Docker image
         run: |
           docker buildx build \
-            -t ghcr.io/YOUR_ORG/YOUR_APP:${{ github.sha }} \
-            -t ghcr.io/YOUR_ORG/YOUR_APP:latest \
+            --no-cache \
+            --progress=plain \
+            -f Dockerfile.production \
+            -t ghcr.io/USER/myapp:${{ github.sha }} \
+            -t ghcr.io/USER/myapp:latest \
             $GITHUB_WORKSPACE
 
       - name: Push image to GHCR
         run: |
-          docker push ghcr.io/YOUR_ORG/YOUR_APP:${{ github.sha }}
-          docker push ghcr.io/YOUR_ORG/YOUR_APP:latest
+          docker push ghcr.io/USER/myapp:${{ github.sha }}
+          docker push ghcr.io/USER/myapp:latest
 
-      # 3. Kubernetes Setup
+      - name: Clean up .env file
+        run: rm -f .env
+
       - name: Set up Kubeconfig
         run: |
           echo "${{ secrets.KUBECONFIG_CONTENT }}" > $GITHUB_WORKSPACE/kubeconfig
+        env:
+          KUBECONFIG: $GITHUB_WORKSPACE/kubeconfig
 
-      # 4. Blue/Green Deployment
       - name: Detect Current Version
         id: detect-version
         run: |
-          CURRENT=$(kubectl get service myapp-svc -o jsonpath='{.spec.selector.version}')
-          if [ "$CURRENT" = "blue" ]; then
-            NEXT="green"
+          CURRENT_VERSION=$(kubectl --kubeconfig=$GITHUB_WORKSPACE/kubeconfig get service myapp-svc -o jsonpath='{.spec.selector.version}')
+          if [ "$CURRENT_VERSION" = "blue" ]; then
+            NEXT_VERSION="green"
+          elif [ "$CURRENT_VERSION" = "green" ]; then
+            NEXT_VERSION="blue"
           else
-            NEXT="blue"
+            echo "No se encontró versión activa, usando blue como predeterminado"
+            CURRENT_VERSION="green"
+            NEXT_VERSION="blue"
           fi
-          echo "current=$CURRENT" >> $GITHUB_OUTPUT
-          echo "next=$NEXT" >> $GITHUB_OUTPUT
+          echo "current=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          echo "next=$NEXT_VERSION" >> $GITHUB_OUTPUT
+          echo "Versión actual: $CURRENT_VERSION → Próxima: $NEXT_VERSION"
 
       - name: Scale Next Version to 1 Replica
         run: |
-          REPLICAS=$(kubectl get deployment myapp-${{ steps.detect-version.outputs.next }} -o jsonpath='{.spec.replicas}' 2>/dev/null || echo "0")
+          REPLICAS=$(kubectl --kubeconfig=$GITHUB_WORKSPACE/kubeconfig get deployment myapp-${{ steps.detect-version.outputs.next }} -o jsonpath='{.spec.replicas}' 2>/dev/null || echo "0")
           if [ "$REPLICAS" = "0" ]; then
-            kubectl scale deployment/myapp-${{ steps.detect-version.outputs.next }} --replicas=1
+            echo "Escalando ${{ steps.detect-version.outputs.next }} a 1 réplica..."
+            kubectl --kubeconfig=$GITHUB_WORKSPACE/kubeconfig scale deployment/myapp-${{ steps.detect-version.outputs.next }} --replicas=1
+          else
+            echo "${{ steps.detect-version.outputs.next }} ya tiene $REPLICAS réplica(s)"
           fi
 
       - name: Update Image to Next Version
         run: |
-          kubectl set image deployment/myapp-${{ steps.detect-version.outputs.next }} \
-            myapp=ghcr.io/YOUR_ORG/YOUR_APP:${{ github.sha }}
+          echo "Actualizando imagen a ${{ github.sha }}..."
+          kubectl --kubeconfig=$GITHUB_WORKSPACE/kubeconfig set image deployment/myapp-${{ steps.detect-version.outputs.next }} \
+            myapp=ghcr.io/USER/myapp:${{ github.sha }}
 
       - name: Wait for Rollout to Complete
         run: |
-          kubectl rollout status deployment/myapp-${{ steps.detect-version.outputs.next }} --timeout=5m
+          echo "Esperando que el deployment ${{ steps.detect-version.outputs.next }} esté listo..."
+          if ! kubectl --kubeconfig=$GITHUB_WORKSPACE/kubeconfig rollout status deployment/myapp-${{ steps.detect-version.outputs.next }} --timeout=5m; then
+            echo "El deployment ${{ steps.detect-version.outputs.next }} falló"
+            exit 1
+          fi
+          echo "Deployment ${{ steps.detect-version.outputs.next }} está listo"
 
       - name: Switch Traffic to Next Version
         run: |
-          kubectl patch service myapp-svc \
+          echo "Cambiando tráfico de ${{ steps.detect-version.outputs.current }} a ${{ steps.detect-version.outputs.next }}..."
+          kubectl --kubeconfig=$GITHUB_WORKSPACE/kubeconfig patch service myapp-svc \
             -p "{\"spec\":{\"selector\":{\"app\":\"myapp\",\"version\":\"${{ steps.detect-version.outputs.next }}\"}}}"
+          echo "Tráfico cambiado exitosamente"
 
       - name: Scale Previous Version to 0
         run: |
-          kubectl scale deployment/myapp-${{ steps.detect-version.outputs.current }} --replicas=0
+          echo "Escalando deployment anterior ${{ steps.detect-version.outputs.current }} a 0 réplicas..."
+          kubectl --kubeconfig=$GITHUB_WORKSPACE/kubeconfig scale deployment/myapp-${{ steps.detect-version.outputs.current }} --replicas=0
+          echo "Deployment anterior escalado a 0"
 
       - name: Generate deployment summary
         run: |
           echo "## Deployment Summary (Blue/Green)" >> $GITHUB_STEP_SUMMARY
-          echo "- **Image:** \`ghcr.io/YOUR_ORG/YOUR_APP:${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "- **Versión Anterior:** \`${{ steps.detect-version.outputs.current }}\` → **Nueva:** \`${{ steps.detect-version.outputs.next }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Image:** \`ghcr.io/USER/myapp:${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch:** \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Versión Anterior:** \`${{ steps.detect-version.outputs.current }}\` → **Nueva Versión:** \`${{ steps.detect-version.outputs.next }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Blue/Green deployment ejecutado sin downtime" >> $GITHUB_STEP_SUMMARY
 ```
 
 ### Pasos del Workflow
