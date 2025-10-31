@@ -468,8 +468,6 @@ gantt
 
 ### Estructura Completa
 
-El workflow completo está integrado en el archivo `.github/workflows/Docker-build-and-push.yaml`:
-
 ```yaml
 name: Docker build and push
 
