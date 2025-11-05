@@ -621,7 +621,7 @@ graph TB
 
 ---
 
-**Código del proyecto**: Disponible en [GitHub Repository](#)
+**Código del proyecto**: Disponible en [GitHub Repository](https://github.com/4h1g4L0w4/AI-Context-Compressor-POC)
 
 ¿Has implementado compresión de contexto en tus sistemas RAG? Comparte tus experiencias en los comentarios.
 
